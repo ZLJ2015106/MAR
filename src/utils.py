@@ -94,18 +94,18 @@ class AgentLoss(torch.nn.Module):
         return loss
 
 
-class DiscriminativeLoss(torch.nn.Module):
+class DiscriminativeLoss(torch.nn.Module):  ## 公式（4）损失函数
     def __init__(self, mining_ratio=0.001):
         super(DiscriminativeLoss, self).__init__()
         self.mining_ratio = mining_ratio
         self.register_buffer('n_pos_pairs', torch.Tensor([0]))
-        self.register_buffer('rate_TP', torch.Tensor([0]))
+        self.register_buffer('rate_TP', torch.Tensor([0]))  ## 向模块添加持久缓冲区
         self.moment = 0.1
         self.initialized = False
 
     def init_threshold(self, pairwise_agreements):
         pos = int(len(pairwise_agreements) * self.mining_ratio)
-        sorted_agreements = np.sort(pairwise_agreements)
+        sorted_agreements = np.sort(pairwise_agreements) ## 将所有值重新进行排序
         t = sorted_agreements[-pos]
         self.register_buffer('threshold', torch.Tensor([t]).cuda())
         self.initialized = True
@@ -119,11 +119,11 @@ class DiscriminativeLoss(torch.nn.Module):
         """
         P, N = self._partition_sets(features.detach(), multilabels, labels)
         if P is None:
-            pos_exponant = torch.Tensor([1]).cuda()
-            num = 0
+            pos_exponant = torch.Tensor([1]).cuda()  ## tensor([1.])
+            num = 0 
         else:
             sdist_pos_pairs = []
-            for (i, j) in zip(P[0], P[1]):
+            for (i, j) in zip(P[0], P[1]):## 将对象中对应的元素打包成一个个元组，然后将这些元组组成一个列表
                 sdist_pos_pair = (features[i] - features[j]).pow(2).sum()
                 sdist_pos_pairs.append(sdist_pos_pair)
             pos_exponant = torch.exp(- torch.stack(sdist_pos_pairs)).mean()
