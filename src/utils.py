@@ -152,12 +152,12 @@ class DiscriminativeLoss(torch.nn.Module):  ## 公式（4）损失函数
             if P is None, no positive pair found in this batch.
         N: negative pair set. similar to P, but will never be None.
         """
-        f_np = features.cpu().numpy()
+        f_np = features.cpu().numpy() ##将tensor变量转变成ndarray变量
         ml_np = multilabels.cpu().numpy()
         p_dist = pdist(f_np)
-        p_agree = 1 - pdist(ml_np, 'minkowski', p=1) / 2
-        sorting_idx = np.argsort(p_dist)
-        n_similar = int(len(p_dist) * self.mining_ratio)
+        p_agree = 1 - pdist(ml_np, 'minkowski', p=1) / 2  ## pdist是一个可以计算余弦、马氏、欧式等多种距离的函数，计算ml_np样本之间的距离, 公式（2）
+        sorting_idx = np.argsort(p_dist)  ##np.argsort将矩阵中的元素从小到大排序
+        n_similar = int(len(p_dist) * self.mining_ratio)  
         similar_idx = sorting_idx[:n_similar]
         is_positive = p_agree[similar_idx] > self.threshold.item()
         pos_idx = similar_idx[is_positive]
@@ -202,7 +202,7 @@ class JointLoss(torch.nn.Module):
         :return:
         """
         loss_terms = []
-        arange = torch.arange(len(agents)).cuda()
+        arange = torch.arange(len(agents)).cuda() ## torch.arange作用和range（1,5）相同，不包含end包含start
         zero = torch.Tensor([0]).cuda()
         for (f, l, s) in zip(features, labels, similarity):
             loss_pos = (f - agents[l]).pow(2).sum()
